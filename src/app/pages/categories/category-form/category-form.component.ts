@@ -42,16 +42,26 @@ export class CategoryFormComponent implements OnInit {
     this.setPageTitle();
   }
 
+  submitForm(){
+    this.submittingForm = true;
+
+    if(this.currentAction = 'new'){
+      this.createCategory();
+    }else{//currentAction = edit
+      this.updateCategory();
+    }
+  }
+
   //Private Methods
 
-  private setCurrentAction() {
+  private setCurrentAction() {//pegar a ação a ser realizada pelo formulário(editar ou criar um novo)
     if(this.route.snapshot.url[0].path == 'new')
       this.currentAction = 'new';
     else
       this.currentAction = 'edit'
   }
 
-  private buildCategoryForm() {
+  private buildCategoryForm() {//criar o formulário
     this.categoryForm = this.formBuilder.group({
       id: [null],
       name: [null, [Validators.required, Validators.minLength(3)]],
@@ -59,7 +69,7 @@ export class CategoryFormComponent implements OnInit {
     })
   }
 
-  private loadCategory() {
+  private loadCategory() {//pegar a categoria a ser editada pelo id
     if(this.currentAction == 'edit'){
 
       this.route.paramMap.pipe(
@@ -76,13 +86,54 @@ export class CategoryFormComponent implements OnInit {
     }
   }
 
-  private setPageTitle() {
+  private setPageTitle() {//editando o título do formulário
     if(this.currentAction == 'new') {
       this.pageTitle = 'Cadastro de Nova Categoria';
     }
     else {
       const categoryName = this.category.name || '';
-      this.pageTitle = 'Editando Categoria' + categoryName;
+      this.pageTitle = 'Editando Categoria: ' + categoryName;
     }
   }
+
+  private createCategory(){//criando nova categoria
+     const category: Category = Object.assign(new Category, this.categoryForm.value);
+
+     this.categoryService.create(category)
+     .subscribe(
+       category => this.actionsForSucess(category),
+       error => this.actionsForError(error)
+     )
+  }
+
+  private updateCategory(){//editando categoria
+    const category: Category = Object.assign(new Category, this.categoryForm.value);
+
+    this.categoryService.update(category)
+    .subscribe(
+      category => this.actionsForSucess(category),
+      error => this.actionsForError(error)
+    )
+  }
+
+  private actionsForSucess(category: Category){
+    toastr.success('Solicitação processada com sucesso!');
+
+    this.router.navigateByUrl('categories', {skipLocationChange: true}).then(
+      () => this.router.navigate(['categories',category.id,'edit'])
+    )
+  }
+
+  private actionsForError(error){
+    toastr.error('Ocorreu um erro ao processar sua solicitação');
+
+    this.submittingForm = false;
+
+    if(error.status === 422){
+      this.serverErrorMensages = JSON.parse(error._body).errors;
+    }else{
+      this.serverErrorMensages = ['Falha na comunicação com o servidor.'];
+    }
+  }
+
 }
