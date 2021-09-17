@@ -21,7 +21,7 @@ export class CategoryFormComponent implements OnInit {
   currentAction: string;
   categoryForm: FormGroup;
   pageTitle: string;
-  serverErrorMensages: string[] = null;
+  serverErrorMessages: string[] = null;
   submittingForm: boolean = false;
   category: Category = new Category;
 
@@ -45,7 +45,7 @@ export class CategoryFormComponent implements OnInit {
   submitForm(){
     this.submittingForm = true;
 
-    if(this.currentAction = 'new'){
+    if(this.currentAction == 'new'){
       this.createCategory();
     }else{//currentAction = edit
       this.updateCategory();
@@ -120,7 +120,7 @@ export class CategoryFormComponent implements OnInit {
     toastr.success('Solicitação processada com sucesso!');
 
     this.router.navigateByUrl('categories', {skipLocationChange: true}).then(
-      () => this.router.navigate(['categories',category.id,'edit'])
+      () => this.router.navigate(['categories', category.id ,'edit'])
     )
   }
 
@@ -130,9 +130,9 @@ export class CategoryFormComponent implements OnInit {
     this.submittingForm = false;
 
     if(error.status === 422){
-      this.serverErrorMensages = JSON.parse(error._body).errors;
+      this.serverErrorMessages = JSON.parse(error._body).errors;
     }else{
-      this.serverErrorMensages = ['Falha na comunicação com o servidor.'];
+      this.serverErrorMessages = ['Falha na comunicação com o servidor.'];
     }
   }
 
